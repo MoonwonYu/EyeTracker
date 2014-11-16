@@ -1,0 +1,23 @@
+#define MIN_ENTROPY 2.8
+#define MAX_DISTANCE 15
+
+typedef struct Pixel {
+	int x;
+	int y;
+	float gradient;
+} Pixel;
+
+typedef struct Line {
+	int length;
+	Pixel[] pixels;
+} Line;
+
+
+void findPotentialArcLiness(Line[] lines, int n) {
+	
+}
+
+void ExtractArcsFromLines(Line[] lines, int n) {
+
+}
+

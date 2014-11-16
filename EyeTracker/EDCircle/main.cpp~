@@ -1,0 +1,94 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "Image.h"
+#include "EDSegment.h"
+
+#include "Timer.h"
+#include "EdgeMap.h"
+#include "EDLib.h"
+
+#define DEFAULT_IMAGE (char *)"2.pgm"
+
+int main(int argc, char *argv[]) {
+	// Here is the test code
+	int width, height;
+	unsigned char *srcImg; 
+	char *str;
+	EdgeMap *map;
+	Timer timer;
+	
+	if (argc == 1) {
+		char *temp = DEFAULT_IMAGE;
+		str = temp;
+	}
+	else {
+		str = argv[1];
+	}
+
+
+	timer.Start();
+
+	if (ReadImagePGM(str, (char **)&srcImg, &width, &height) == 0){
+	 	printf("Failed opening <%s>\n", str);
+		return 1;
+	} //end-if
+
+	printf("Working on %dx%d image\n", width, height);
+	
+	timer.Start();
+
+	TGAImage *img = new TGAImage((short)width, (short)height);
+	Colour color = {0,0,0,255};
+
+	for(int x=0; x<width; x++)
+		for(int y=0; y<width; y++)
+			img->setPixel(color,x,y);
+
+	map = DetectEdgesByEDPF(srcImg, width, height, 1.0);
+
+	SaveImagePGM((char *)"EDPF-EdgeMap.pgm", (char *)map->edgeImg, width, height);
+
+
+	// This is how you access the pixels of the edge segments returned by EDPF
+	memset(map->edgeImg, 0, width*height);
+	Line *line = NULL;
+	for (int i=0; i<map->noSegments; i++){
+		int start, end;
+		for (int j=0; j<map->segments[i].noPixels; j++){
+			int r = map->segments[i].pixels[j].r;
+			int c = map->segments[i].pixels[j].c;
+			map->edgeImg[r*width+c] = 255;
+		}
+
+		if (line != NULL) {
+			free(line->pixels);
+			free(line);
+		}
+
+		line = makeLine(map->segments[i]);
+
+//		printf("%f\n", getEntropy(*line));
+		if (getMaxEntropy(*line, &start, &end) < MIN_ENTROPY) continue;
+
+		color.r = (color.r * 13) % 186 + 70;
+		color.g = (color.r * 17) % 186 + 70;
+		color.b = (color.r * 41) % 186 + 70;
+		for (int j=start; j<end; j++){
+			int r = line->pixels[j].x;
+			int c = line->pixels[j].y;
+		      
+			img->setPixel(color,height-r-1,c);
+		} //end-for
+	} //end-for
+
+	timer.Stop();
+
+	printf("EDCircle detects <%d> edge segments in <%4.2lf> ms.\n\n", map->noSegments, timer.ElapsedTime());
+
+	delete map;
+	delete srcImg;
+	img->WriteImage("image.tga");
+
+	return 0;
+}

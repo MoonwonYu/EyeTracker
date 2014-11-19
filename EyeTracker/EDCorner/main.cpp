@@ -3,6 +3,7 @@
 
 #include "Image.h"
 #include "EDSegment.h"
+#include "EDCorner.h"
 
 #include "Timer.h"
 #include "EdgeMap.h"

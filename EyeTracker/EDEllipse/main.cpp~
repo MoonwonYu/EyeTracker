@@ -47,22 +47,20 @@ int main(int argc, char *argv[]) {
 
 	map = DetectEdgesByEDPF(srcImg, width, height, 1.0);
 
-/* EDPF
 	SaveImagePGM((char *)"EDPF-EdgeMap.pgm", (char *)map->edgeImg, width, height);
+
 
 	// This is how you access the pixels of the edge segments returned by EDPF
 	memset(map->edgeImg, 0, width*height);
-*/
 	Line *line = NULL;
 	for (int i=0; i<map->noSegments; i++){
 		int start, end;
-/* EDPF
 		for (int j=0; j<map->segments[i].noPixels; j++){
 			int r = map->segments[i].pixels[j].r;
 			int c = map->segments[i].pixels[j].c;
 			map->edgeImg[r*width+c] = 255;
 		}
-*/
+
 		if (line != NULL) {
 			free(line->pixels);
 			free(line);
@@ -71,7 +69,8 @@ int main(int argc, char *argv[]) {
 		line = makeLine(map->segments[i]);
 
 //		printf("%f\n", getEntropy(*line));
-		if (getMaxEntropy(*line, &start, &end) < MIN_ENTROPY) continue;
+//		if (getMaxEntropy(*line, &start, &end) < MIN_ENTROPY) continue;
+		if (getMaxEntropy(*line) < MIN_ENTROPY) continue;
 
 		color.r = (color.r * 13) % 186 + 70;
 		color.g = (color.r * 17) % 186 + 70;

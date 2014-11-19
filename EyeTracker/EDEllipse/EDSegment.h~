@@ -8,6 +8,7 @@
 #define NUM_DIRECTION 8
 #define MIN_ENTROPY 2.0
 #define MAX_DISTANCE 15
+#define MIN_LENGTH 25
 
 typedef struct GPixel {
 	int x;
@@ -20,12 +21,14 @@ typedef struct Line {
 	GPixel *pixels;
 } Line;
 
+int isTooShort(Line line);
 Line *makeLine(EdgeSegment segment);
 GPixel makePixel(Line line, int x, int y, int index);
 float getGradient(Line line, int index);
 int isClosedLine(Line line);
 int isClosedLine(Line line, int start, int end);
 float getMaxEntropy(Line line, int *start, int *end);
+float getMaxEntropy(Line line);
 float getEntropy(Line line, int start, int end);
 int getDirection(float gradient);
 
@@ -89,6 +92,7 @@ float getMaxEntropy(Line line, int *start, int *end) {
 		for (e=s+1; e<line.length; e++) {
 			float tempEp;
 			if (!isClosedLine(line, s, e)) continue;
+			if (isTooShort(line)) continue;
 
 			tempEp = getEntropy(line, s, e);
 			if (tempEp > MIN_ENTROPY && tempEp > max) {
@@ -98,6 +102,16 @@ float getMaxEntropy(Line line, int *start, int *end) {
 			}
 		}
 	}
+
+	return max;
+}
+
+float getMaxEntropy(Line line) {
+	float max = 0.0;
+	int s, e;
+	
+	if (isClosedLine(line, s, e) && !isTooShort(line))
+		max = getEntropy(line, 0, line.length-1);
 
 	return max;
 }
@@ -130,6 +144,10 @@ int getDirection(float gradient) {
 	
 	printf("unKnown direction : %f\n", gradient);
 	return 0;
+}
+
+int isTooShort(Line line) {
+	return line.length < MIN_LENGTH;
 }
 
 #endif

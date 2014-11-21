@@ -55,7 +55,6 @@ int main(int argc, char *argv[]) {
 */
 	Line *line = NULL;
 	for (int i=0; i<map->noSegments; i++){
-		int start, end;
 /* EDPF
 		for (int j=0; j<map->segments[i].noPixels; j++){
 			int r = map->segments[i].pixels[j].r;
@@ -71,12 +70,13 @@ int main(int argc, char *argv[]) {
 		line = makeLine(map->segments[i]);
 
 //		printf("%f\n", getEntropy(*line));
-		if (getMaxEntropy(*line, &start, &end) < MIN_ENTROPY) continue;
+		if (!isClosedLine(*line)) continue;
+		if (getEntropy(*line) < MIN_ENTROPY) continue;
 
 		color.r = (color.r * 13) % 186 + 70;
 		color.g = (color.r * 17) % 186 + 70;
 		color.b = (color.r * 41) % 186 + 70;
-		for (int j=start; j<end; j++){
+		for (int j=0; j<line->length; j++){
 			int r = line->pixels[j].x;
 			int c = line->pixels[j].y;
 		      

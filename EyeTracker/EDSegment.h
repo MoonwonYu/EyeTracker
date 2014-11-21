@@ -13,7 +13,7 @@
 typedef struct GPixel {
 	int x;
 	int y;
-	double gradient;
+	float gradient;
 } GPixel;
 
 typedef struct Line {
@@ -23,64 +23,44 @@ typedef struct Line {
 
 int isTooShort(Line line);
 Line *makeLine(EdgeSegment segment);
-Line *makeLine(Line *line, int start, int end);
-double getGradient(Line line, int index);
+GPixel makePixel(Line line, int x, int y, int index);
+float getGradient(Line line, int index);
 int isClosedLine(Line line);
 int isClosedLine(Line line, int start, int end);
-double getMaxEntropy(Line line, int *start, int *end);
-double getEntropy(Line line);
-double getEntropy(Line line, int start, int end);
-int getDirection(double gradient);
+float getMaxEntropy(Line line, int *start, int *end);
+float getMaxEntropy(Line line);
+float getEntropy(Line line, int start, int end);
+int getDirection(float gradient);
 
 Line *makeLine(EdgeSegment segment) {
 	int i;
 	Line *line = (Line *) malloc (sizeof(Line));
 
 	line->length = segment.noPixels;	
-	line->pixels = (GPixel *) malloc (sizeof(GPixel) * segment.noPixels);
+	line->pixels = (GPixel *) malloc (sizeof(GPixel)*segment.noPixels);
 
 	for (i=0; i<segment.noPixels; i++) {
-		line->pixels[i].x = segment.pixels[i].r;
-		line->pixels[i].y = segment.pixels[i].c;
-	}
-	for (i=0; i<segment.noPixels; i++) {
-		line->pixels[i].gradient = getGradient(*line, i);
+		line->pixels[i] = makePixel(*line, segment.pixels[i].r, segment.pixels[i].c, i);
 	}
 
 	return line;
 }
 
-Line *makeLine(Line *line, int start, int end) {
-	int i;
-	Line *sub_line = (Line *) malloc (sizeof(Line));
+GPixel makePixel(Line line, int x, int y, int index) {
+	GPixel pixel = {x, y, };
+	pixel.gradient = getGradient(line, index);
 
-	sub_line->length = end-start+1;
-	sub_line->pixels = (GPixel *) malloc (sizeof(GPixel)*(end-start+1));
-
-	for (i=start; i<end; i++) {
-		sub_line->pixels[i] = line->pixels[i];
-	}
-
-	return line;
+	return pixel;
 }
 
-double getGradient(Line line, int index) {
-	double dx, dy;
+float getGradient(Line line, int index) {
+	float dx, dy;
 	
-	if (index > 0 && index < line.length-1) {
-		dx = line.pixels[index-1].x - line.pixels[index+1].x;
-		dy = line.pixels[index-1].y - line.pixels[index+1].y;
-	}
-	else if (index == 0) {
-		dx = line.pixels[index].x - line.pixels[index+1].x;
-		dy = line.pixels[index].y - line.pixels[index+1].y;
-	}
-	else if (index == line.length-1) {
+	if (index != 0) {
 		dx = line.pixels[index-1].x - line.pixels[index].x;
 		dy = line.pixels[index-1].y - line.pixels[index].y;
 	}
 	else {
-		printf("out of index (getGradient) : %d\n", index);
 		return 0.0;
 	}
 
@@ -105,17 +85,17 @@ int isClosedLine(Line line, int start, int end) {
 	return dx <= MAX_DISTANCE && dy <= MAX_DISTANCE;
 }
 
-double getMaxEntropy(Line line, int *start, int *end) {
-	double max = 0.0;
+float getMaxEntropy(Line line, int *start, int *end) {
+	float max = 0.0;
 	int s, e;
-	
 	for (s=0; s<line.length-1; s++) {
 		for (e=s+1; e<line.length; e++) {
-			double tempEp;
+			float tempEp;
 			if (!isClosedLine(line, s, e)) continue;
+			if (isTooShort(line)) continue;
 
 			tempEp = getEntropy(line, s, e);
-			if (tempEp > max) {
+			if (tempEp > MIN_ENTROPY && tempEp > max) {
 				max = tempEp;
 				*start = s;
 				*end = e;
@@ -126,26 +106,18 @@ double getMaxEntropy(Line line, int *start, int *end) {
 	return max;
 }
 
-double getEntropy(Line line) {
-	double entropy = 0.0;
-	int fgradient[NUM_DIRECTION] = {0, 0, 0, 0, 0, 0, 0, 0};
-	int i;
-
-	for (i=0; i<line.length; i++) {
-		fgradient[getDirection(line.pixels[i].gradient)]++;
-	}
+float getMaxEntropy(Line line) {
+	float max = 0.0;
+	int s, e;
 	
-	for (i=0; i<NUM_DIRECTION; i++) {
-		double fg = (double)fgradient[i]/(double)(line.length);
-		if (!fgradient[i]) continue;
-		entropy -= fg*log(fg)/log(2);
-	}
+	if (isClosedLine(line, s, e) && !isTooShort(line))
+		max = getEntropy(line, 0, line.length-1);
 
-	return entropy;
+	return max;
 }
 
-double getEntropy(Line line, int start, int end) {
-	double entropy = 0.0;
+float getEntropy(Line line, int start, int end) {
+	float entropy = 0.0;
 	int fgradient[NUM_DIRECTION] = {0, };
 	int i;
 
@@ -155,7 +127,7 @@ double getEntropy(Line line, int start, int end) {
 	}
 	
 	for (i=0; i<NUM_DIRECTION; i++) {
-		double fg = (double)fgradient[i]/(double)(end-start+1);
+		float fg = (float)fgradient[i]/(float)(end-start+1);
 		if (!fgradient[i]) continue;
 		entropy -= fg*log(fg)/log(2);
 	}
@@ -163,11 +135,11 @@ double getEntropy(Line line, int start, int end) {
 	return entropy;
 }
 
-int getDirection(double gradient) {
-	double unit = 180.0 / NUM_DIRECTION;
+int getDirection(float gradient) {
+	float unit = 180.0 / NUM_DIRECTION;
 	int i;
 	for (i=1; i<=NUM_DIRECTION; i++) {
-		if (gradient <= 90.0-unit*(i-1) && gradient >= 90.0-unit*i) return i-1;
+		if (gradient >= 90.0-unit*i) return i-1;
 	}
 	
 	printf("unKnown direction : %f\n", gradient);

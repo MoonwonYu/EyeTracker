@@ -11,14 +11,20 @@
 
 #define DEFAULT_IMAGE (char *)"2.pgm"
 
+int width, height;
+
+void drawSubEdges(Line line, int numOfCorner, int *cornerIndexes, TGAImage *img, Colour *color);
+
 int main(int argc, char *argv[]) {
 	// Here is the test code
-	int width, height;
+	int i;
+	
 	unsigned char *srcImg; 
 	char *str;
 	EdgeMap *map;
 	Timer timer;
-	
+	int numOfNearCircular = 0;
+
 	if (argc == 1) {
 		char *temp = DEFAULT_IMAGE;
 		str = temp;
@@ -26,7 +32,6 @@ int main(int argc, char *argv[]) {
 	else {
 		str = argv[1];
 	}
-
 
 	timer.Start();
 
@@ -48,42 +53,52 @@ int main(int argc, char *argv[]) {
 
 	map = DetectEdgesByEDPF(srcImg, width, height, 1.0);
 
-/* EDPF
-	SaveImagePGM((char *)"EDPF-EdgeMap.pgm", (char *)map->edgeImg, width, height);
+	Line **lines = NULL;
+	lines = (Line **) malloc (sizeof(Line *) * map->noSegments);
+	for (i=0; i<map->noSegments; i++){
+		lines[i] = makeLine(map->segments[i]);
+	}
+	
+	for (i=0; i<map->noSegments; i++){
+		int numOfCorner;
+		int *cornerIndexes;
 
-	// This is how you access the pixels of the edge segments returned by EDPF
-	memset(map->edgeImg, 0, width*height);
-*/
-	Line *line = NULL;
-	for (int i=0; i<map->noSegments; i++){
-		int start, end;
-/* EDPF
-		for (int j=0; j<map->segments[i].noPixels; j++){
-			int r = map->segments[i].pixels[j].r;
-			int c = map->segments[i].pixels[j].c;
-			map->edgeImg[r*width+c] = 255;
+		if (isTooShort(*lines[i])) continue;
+		if (!isClosedLine(*lines[i])) continue;
+		if (getEntropy(*lines[i]) < SEGMENT_MIN_ENTROPY) continue;
+
+		cornerIndexes = getCorners(*lines[i], &numOfCorner);
+		
+		if (numOfCorner) {
+			drawSubEdges(*lines[i], numOfCorner, cornerIndexes, img, &color);
+			numOfNearCircular++;
 		}
-*/
-		if (line != NULL) {
-			free(line->pixels);
-			free(line);
-		}
+		free (cornerIndexes);
 
-		line = makeLine(map->segments[i]);
-
-//		printf("%f\n", getEntropy(*line));
-		if (getMaxEntropy(*line, &start, &end) < MIN_ENTROPY) continue;
-
-		color.r = (color.r * 13) % 186 + 70;
-		color.g = (color.r * 17) % 186 + 70;
-		color.b = (color.r * 41) % 186 + 70;
-		for (int j=start; j<end; j++){
-			int r = line->pixels[j].x;
-			int c = line->pixels[j].y;
-		      
-			img->setPixel(color,height-r-1,c);
-		} //end-for
 	} //end-for
+
+	if (numOfNearCircular < CORNER_MIN_ARC) {
+		printf("There is no Near-Circular\n");
+
+		for (i=0; i<map->noSegments; i++){
+			int numOfCorner;
+			int *cornerIndexes;
+
+			cornerIndexes = getCorners(*lines[i], &numOfCorner);
+			
+			if (numOfCorner) {
+				drawSubEdges(*lines[i], numOfCorner, cornerIndexes, img, &color);
+			}
+		
+			free (cornerIndexes);
+		} //end-for
+	} // end-if
+
+	for (i=0; i<map->noSegments; i++) {
+		free(lines[i]->pixels);
+		free(lines[i]);
+	}
+	free(lines);
 
 	timer.Stop();
 
@@ -94,4 +109,35 @@ int main(int argc, char *argv[]) {
 	delete srcImg;
 
 	return 0;
+}
+
+void drawSubEdges(Line line, int numOfCorner, int *cornerIndexes, TGAImage *img, Colour *color) {
+	int c;
+
+	Line **sub_lines = (Line **) malloc (sizeof(Line *) * (numOfCorner-1));
+
+	for (c=0; c<(numOfCorner-1); c++) {
+		int j;
+		sub_lines[c] = makeLine(line, cornerIndexes[c], cornerIndexes[c+1]);
+		
+		if (isTooShort(*sub_lines[c])) continue;
+		if (getEntropy(*sub_lines[c]) < CORNER_MIN_ENTROPY) continue;
+
+		color->r = (color->r * 13) % 186 + 70;
+		color->g = (color->g * 83) % 186 + 70;
+		color->b = (color->b * 91) % 186 + 70;
+
+		for (j=0; j<sub_lines[c]->length; j++) {
+			int x = sub_lines[c]->pixels[j].x;
+			int y = sub_lines[c]->pixels[j].y;
+
+			img->setPixel(*color, height-x-1,y);
+		}
+	}
+
+	for (c=0; c<(numOfCorner-1); c++) {
+		free(sub_lines[c]->pixels);
+		free(sub_lines[c]);
+	}
+	free(sub_lines);
 }

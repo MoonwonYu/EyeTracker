@@ -19,6 +19,7 @@ typedef struct Colour {
 class TGAImage {
 
 public:
+
 	//Default Constructor
 	TGAImage() {
 	}

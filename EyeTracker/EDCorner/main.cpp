@@ -13,10 +13,9 @@
 
 int width, height;
 
-void drawSubEdges(Line line, int numOfCorner, int *cornerIndexes, TGAImage *img, Colour *color);
+void drawSubEdges(Line **sub_lines, int count, TGAImage *img, Colour *color);
 
 int main(int argc, char *argv[]) {
-	// Here is the test code
 	int i;
 	
 	unsigned char *srcImg; 
@@ -43,11 +42,10 @@ int main(int argc, char *argv[]) {
 	printf("Working on %dx%d image\n", width, height);
 	
 	timer.Start();
-
 	TGAImage *img = new TGAImage((short)width, (short)height);
 	Colour color = {0,0,0,255};
 
-	for(int x=0; x<width; x++)
+	for(int x=0; x<height; x++)
 		for(int y=0; y<width; y++)
 			img->setPixel(color,x,y);
 
@@ -62,34 +60,51 @@ int main(int argc, char *argv[]) {
 	for (i=0; i<map->noSegments; i++){
 		int numOfCorner;
 		int *cornerIndexes;
+		Line **sub_lines;
+		int count;
 
-		if (isTooShort(*lines[i])) continue;
+		if (lines[i]->length < SEGMENT_MIN_CIRCULAR_LENGTH) continue;
 		if (!isClosedLine(*lines[i])) continue;
 		if (getEntropy(*lines[i]) < SEGMENT_MIN_ENTROPY) continue;
 
 		cornerIndexes = getCorners(*lines[i], &numOfCorner);
 		
-		if (numOfCorner) {
-			drawSubEdges(*lines[i], numOfCorner, cornerIndexes, img, &color);
-			numOfNearCircular++;
+		sub_lines = getSubArcs(*lines[i], numOfCorner, cornerIndexes, &count);
+		numOfNearCircular += count;
+
+		drawSubEdges(sub_lines, count, img, &color);
+		
+		for (int c=0; c<count; c++) {
+			free(sub_lines[c]->pixels);
+			free(sub_lines[c]);
 		}
+		free(sub_lines);
+
 		free (cornerIndexes);
 
 	} //end-for
 
-	if (numOfNearCircular < CORNER_MIN_ARC) {
+	if (!numOfNearCircular) {
 		printf("There is no Near-Circular\n");
 
 		for (i=0; i<map->noSegments; i++){
 			int numOfCorner;
 			int *cornerIndexes;
+			Line **sub_lines;
+			int count;
 
 			cornerIndexes = getCorners(*lines[i], &numOfCorner);
 			
-			if (numOfCorner) {
-				drawSubEdges(*lines[i], numOfCorner, cornerIndexes, img, &color);
-			}
+			sub_lines = getSubArcs(*lines[i], numOfCorner, cornerIndexes, &count);
+
+			drawSubEdges(sub_lines, count, img, &color);
 		
+			for (int c=0; c<count; c++) {
+				free(sub_lines[c]->pixels);
+				free(sub_lines[c]);
+			}
+			free(sub_lines);
+
 			free (cornerIndexes);
 		} //end-for
 	} // end-if
@@ -102,7 +117,7 @@ int main(int argc, char *argv[]) {
 
 	timer.Stop();
 
-	printf("EDCircle detects <%d> edge segments in <%4.2lf> ms.\n\n", map->noSegments, timer.ElapsedTime());
+	printf("EDCorner detects <%d> edge segments in <%4.2lf> ms.\n\n", map->noSegments, timer.ElapsedTime());
 	img->WriteImage("image.tga");
 
 	delete map;
@@ -111,33 +126,21 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-void drawSubEdges(Line line, int numOfCorner, int *cornerIndexes, TGAImage *img, Colour *color) {
-	int c;
+void drawSubEdges(Line **sub_lines, int count, TGAImage *img, Colour *color) {
+	int i;
 
-	Line **sub_lines = (Line **) malloc (sizeof(Line *) * (numOfCorner-1));
-
-	for (c=0; c<(numOfCorner-1); c++) {
+	for (i=0; i<count; i++) {
 		int j;
-		sub_lines[c] = makeLine(line, cornerIndexes[c], cornerIndexes[c+1]);
-		
-		if (isTooShort(*sub_lines[c])) continue;
-		if (getEntropy(*sub_lines[c]) < CORNER_MIN_ENTROPY) continue;
 
 		color->r = (color->r * 13) % 186 + 70;
 		color->g = (color->g * 83) % 186 + 70;
 		color->b = (color->b * 91) % 186 + 70;
 
-		for (j=0; j<sub_lines[c]->length; j++) {
-			int x = sub_lines[c]->pixels[j].x;
-			int y = sub_lines[c]->pixels[j].y;
+		for (j=0; j<sub_lines[i]->length; j++) {
+			int r = height-sub_lines[i]->pixels[j].r-1;
+			int c = sub_lines[i]->pixels[j].c;
 
-			img->setPixel(*color, height-x-1,y);
+			img->setPixel(*color, r, c);
 		}
 	}
-
-	for (c=0; c<(numOfCorner-1); c++) {
-		free(sub_lines[c]->pixels);
-		free(sub_lines[c]);
-	}
-	free(sub_lines);
 }

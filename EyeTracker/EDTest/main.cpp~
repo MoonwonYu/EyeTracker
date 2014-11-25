@@ -38,7 +38,7 @@ int main(){
   // Here is the test code
   int width, height;
   unsigned char *srcImg; 
-  char *str = (char *)"circle.pgm";
+  char *str = (char *)"4.pgm";
 
   if (ReadImagePGM(str, (char **)&srcImg, &width, &height) == 0){
     printf("Failed opening <%s>\n", str);
@@ -84,7 +84,7 @@ int main(){
     for(int y=0; y<width; y++)
       img->setPixel(color,x,y);
 
-  map = DetectEdgesByEDPF(srcImg, width, height, 1.0);
+  map = DetectEdgesByEDPF(srcImg, width, height, 5.0);
 
   timer.Stop();
 

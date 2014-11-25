@@ -8,11 +8,11 @@
 #define SEGMENT_NUM_DIRECTION 8
 #define SEGMENT_MIN_ENTROPY 2.5
 #define SEGMENT_MAX_DISTANCE 15
-#define SEGMENT_MIN_LENGTH 25
+#define SEGMENT_MIN_CIRCULAR_LENGTH 150
 
 typedef struct GPixel {
-	int x;
-	int y;
+	int r;
+	int c;
 	double gradient;
 } GPixel;
 
@@ -21,8 +21,7 @@ typedef struct Line {
 	GPixel *pixels;
 } Line;
 
-int isTooShort(Line line);
-Line *makeLine(EdgeSegment segment);
+Line *makeLine(EdgeSegment segment, int height);
 Line *makeLine(Line line, int start, int end);
 double getGradient(Line line, int index);
 int isClosedLine(Line line);
@@ -32,6 +31,7 @@ double getEntropy(Line line);
 double getEntropy(Line line, int start, int end);
 int getDirection(double gradient);
 
+// inverse x-axis
 Line *makeLine(EdgeSegment segment) {
 	int i;
 	Line *line = (Line *) malloc (sizeof(Line));
@@ -42,8 +42,8 @@ Line *makeLine(EdgeSegment segment) {
 	memset(line->pixels, 0, sizeof(GPixel) * segment.noPixels);
 
 	for (i=0; i<segment.noPixels; i++) {
-		line->pixels[i].x = segment.pixels[i].r;
-		line->pixels[i].y = segment.pixels[i].c;
+		line->pixels[i].r = segment.pixels[i].r;
+		line->pixels[i].c = segment.pixels[i].c;
 	}
 	for (i=0; i<segment.noPixels; i++) {
 		line->pixels[i].gradient = getGradient(*line, i);
@@ -57,18 +57,14 @@ Line *makeLine(Line line, int start, int end) {
 	int length = end-start+1;
 
 	Line *sub_line = (Line *) malloc (sizeof(Line));
-	memset(sub_line, 0, sizeof(Line));
 
 	sub_line->length = length;
 	sub_line->pixels = (GPixel *) malloc (sizeof(GPixel)*length);
-	memset(sub_line->pixels, 0, sizeof(GPixel)*length);
 
-	for (i=0; i<length; i++) {
-		double temp = line.pixels[start+i].gradient;
-
-		sub_line->pixels[i].x = line.pixels[start+i].x;
-		sub_line->pixels[i].y = line.pixels[start+i].y;
-		sub_line->pixels[i].gradient = temp;
+	for (i=0; i<sub_line->length; i++) {
+		sub_line->pixels[i].r = line.pixels[start+i].r;
+		sub_line->pixels[i].c = line.pixels[start+i].c;
+		sub_line->pixels[i].gradient = line.pixels[start+i].gradient;
 	}
 
 	return sub_line;
@@ -80,16 +76,16 @@ double getGradient(Line line, int index) {
 	double theta360;	// +-180
 	
 	if (index > 0 && index < line.length-1) {
-		dx = line.pixels[index-1].x - line.pixels[index+1].x;
-		dy = line.pixels[index-1].y - line.pixels[index+1].y;
+		dx = line.pixels[index-1].r - line.pixels[index+1].r;
+		dy = line.pixels[index-1].c - line.pixels[index+1].c;
 	}
 	else if (index == 0) {
-		dx = line.pixels[index].x - line.pixels[index+1].x;
-		dy = line.pixels[index].y - line.pixels[index+1].y;
+		dx = line.pixels[index].r - line.pixels[index+1].r;
+		dy = line.pixels[index].c - line.pixels[index+1].c;
 	}
 	else if (index == line.length-1) {
-		dx = line.pixels[index-1].x - line.pixels[index].x;
-		dy = line.pixels[index-1].y - line.pixels[index].y;
+		dx = line.pixels[index-1].r - line.pixels[index].r;
+		dy = line.pixels[index-1].c - line.pixels[index].c;
 	}
 	else {
 		printf("out of index (getGradient) : %d\n", index);
@@ -113,8 +109,8 @@ double getGradient(Line line, int index) {
 int isClosedLine(Line line) {
 	int dx, dy;
 
-	dx = abs(line.pixels[0].x - line.pixels[line.length-1].x);
-	dy = abs(line.pixels[0].y - line.pixels[line.length-1].y);
+	dx = abs(line.pixels[0].r - line.pixels[line.length-1].r);
+	dy = abs(line.pixels[0].c - line.pixels[line.length-1].c);
 //	printf("%d, %d\n", dx, dy);
 	return dx <= SEGMENT_MAX_DISTANCE && dy <= SEGMENT_MAX_DISTANCE;
 }
@@ -122,8 +118,8 @@ int isClosedLine(Line line) {
 int isClosedLine(Line line, int start, int end) {
 	int dx, dy;
 
-	dx = abs(line.pixels[start].x - line.pixels[end].x);
-	dy = abs(line.pixels[start].y - line.pixels[end].y);
+	dx = abs(line.pixels[start].r - line.pixels[end].r);
+	dy = abs(line.pixels[start].c - line.pixels[end].c);
 //	printf("%d, %d\n", dx, dy);
 	return dx <= SEGMENT_MAX_DISTANCE && dy <= SEGMENT_MAX_DISTANCE;
 }
@@ -200,10 +196,6 @@ int getDirection(double gradient) {
 	
 	printf("unKnown direction : %f\n", gradient);
 	return 0;
-}
-
-int isTooShort(Line line) {
-	return line.length < SEGMENT_MIN_LENGTH;
 }
 
 #endif

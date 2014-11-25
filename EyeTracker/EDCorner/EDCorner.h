@@ -8,19 +8,22 @@
 #define CORNER_SIGMA 2.0
 #define CORNER_THRESHOLD 4.0
 #define CORNER_DELTA 0.001
-#define CORNER_MIN_ENTROPY 1.5
+#define CORNER_MIN_ENTROPY 1.9
 #define CORNER_ANGLE_THRESHOLD 160.0
 #define CORNER_LINEFIT_THRESHOLD 0.25
 #define CORNER_KERNEL_SIZE 3
-#define CORNER_MIN_ARC 3
+#define CORNER_MIN_LENGTH 25
 
 int *getCorners(Line line, int *numOfCorners);
-double leastSquareLineFit(Line line, int start, int end);
+//double getEstimatedLineFit(Line line, int start, int end, int x);
+//double leastSquareLineFit(Line line, int start, int end);
 double getAngleAtCorner(Line line, int *candidateCornerIndexes, int index);
 double getAngleBetweenVectors(GPixel p, GPixel c, GPixel n);
 double getKernelValue(int index);
 double gaussian(double mean, double stddev, double x);
 double getDervatedGaussian(double mean, double stddev, double x);
+int isTooShort(Line line);
+Line **getSubArcs(Line line, int numOfCorner, int *cornerIndexes, int *count);
 
 int *getCorners(Line line, int *numOfCorners) {
 	int i;
@@ -84,8 +87,27 @@ int *getCorners(Line line, int *numOfCorners) {
 	return cornerIndexes;
 }
 
+double getEstimatedLineFit(Line line, int start, int end, int x) {
+        int dx, dy;
+        double gradient;
+
+        dx = line.pixels[end].c - line.pixels[start].c;
+        dy = line.pixels[end].r - line.pixels[start].r;
+
+        gradient = (double)dy/(double)dx;
+
+        return line.pixels[start].r + (x - line.pixels[start].c) * gradient;
+}
+
 double leastSquareLineFit(Line line, int start, int end) {
-        
+        double sqSum = 0.0;
+        int i;
+        for (i=start; i<=end; i++) {
+                double delta = line.pixels[i].r - getEstimatedLineFit(line, start, end, i);
+                sqSum += delta*delta;
+        }
+
+        return sqrt(sqSum/(end-start+1));
 }
 
 double getAngleAtCorner(Line line, int *candidateCornerIndexes, int index){
@@ -102,13 +124,16 @@ double getAngleAtCorner(Line line, int *candidateCornerIndexes, int index){
 }
 
 double getAngleBetweenVectors(GPixel p, GPixel c, GPixel n) {
-	GPixel v1, v2;
+	struct Point {
+		int x;
+		int y;
+	} v1, v2;
 
-	v1.x = c.x - p.x;
-	v1.y = c.y - p.y;
+	v1.x = c.c - p.c;
+	v1.y = c.r - p.r;
 
-	v2.x = c.x - n.x;
-	v2.y = c.y - n.y;
+	v2.x = c.c - n.c;
+	v2.y = c.r - n.r;
 
 	return acos( (v1.x*v2.x + v1.y*v2.y) / (sqrt(v1.x*v1.x + v1.y*v1.y) * sqrt(v2.x*v2.x + v2.y*v2.y)) )*180.0/M_PI;
 }
@@ -128,6 +153,35 @@ double getDervatedGaussian(double mean, double stddev, double x) {
 	double prev, next;
 	
 	return (gaussian(mean, stddev, x+CORNER_DELTA/2.0)-gaussian(mean, stddev, x-CORNER_DELTA/2.0)) / CORNER_DELTA;
+}
+
+int isTooShort(Line line) {
+	return line.length < CORNER_MIN_LENGTH;
+}
+
+Line **getSubArcs(Line line, int numOfCorner, int *cornerIndexes, int *count) {
+        int i;
+	Line **sub_lines = (Line **) malloc (sizeof(Line *) * (numOfCorner-1));
+
+	for (i=0, (*count)=0; i<(numOfCorner-1); i++) {
+		sub_lines[(*count)] = makeLine(line, cornerIndexes[i], cornerIndexes[i+1]);
+
+		if (isTooShort(*(sub_lines[(*count)])) || 
+                        getEntropy(*(sub_lines[(*count)])) < CORNER_MIN_ENTROPY) {
+
+			free(sub_lines[(*count)]->pixels);
+			free(sub_lines[(*count)]);
+                        continue;
+                }
+                
+		(*count)++;
+	}
+
+	if (*count == 0) {
+		free(sub_lines);
+		return NULL;
+	}
+        return sub_lines;
 }
 
 #endif

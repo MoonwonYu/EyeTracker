@@ -2,22 +2,31 @@
 #include <stdlib.h>
 
 #include "Image.h"
-#include "EDSegment.h"
-
-#include "Timer.h"
+#include "EDEllipse.h"
 #include "EdgeMap.h"
 #include "EDLib.h"
+#include "EDCorner.h"
+#include "Timer.h"
 
 #define DEFAULT_IMAGE (char *)"2.pgm"
 
-int main(int argc, char *argv[]) {
-	// Here is the test code
-	int width, height;
-	unsigned char *srcImg; 
+//NameSpaces
+using namespace std;
+
+int width, height;
+
+void drawEllipse(Line *line, IplImage *img);
+
+int main(int argc, char *argv[])
+{
+	int i;
+	
 	char *str;
 	EdgeMap *map;
 	Timer timer;
-	
+	int numOfNearCircular = 0;
+	IplImage *cvImg;
+
 	if (argc == 1) {
 		char *temp = DEFAULT_IMAGE;
 		str = temp;
@@ -26,70 +35,118 @@ int main(int argc, char *argv[]) {
 		str = argv[1];
 	}
 
-
 	timer.Start();
 
-	if (ReadImagePGM(str, (char **)&srcImg, &width, &height) == 0){
-	 	printf("Failed opening <%s>\n", str);
+	if ((cvImg = cvLoadImage(str, CV_LOAD_IMAGE_GRAYSCALE)) == 0) {
+		printf("Failed opening <%s>\n", str);
 		return 1;
-	} //end-if
+	}
+	
+	width = cvImg->width;
+	height = cvImg->height;
 
 	printf("Working on %dx%d image\n", width, height);
 	
 	timer.Start();
-
-	TGAImage *img = new TGAImage((short)width, (short)height);
 	Colour color = {0,0,0,255};
 
-	for(int x=0; x<width; x++)
-		for(int y=0; y<width; y++)
-			img->setPixel(color,x,y);
+	map = DetectEdgesByEDPF((unsigned char *)cvImg->imageData, width, height, 1.0);
 
-	map = DetectEdgesByEDPF(srcImg, width, height, 1.0);
+	Line **lines = NULL;
+	lines = (Line **) malloc (sizeof(Line *) * map->noSegments);
+	for (i=0; i<map->noSegments; i++){
+		lines[i] = makeLine(map->segments[i]);
+	}
+	
+	for (i=0; i<map->noSegments; i++){
+		int j;
+		int numOfCorner;
+		int *cornerIndexes;
+		Line **sub_lines;
+		int count;
 
-	SaveImagePGM((char *)"EDPF-EdgeMap.pgm", (char *)map->edgeImg, width, height);
+		if (lines[i]->length < SEGMENT_MIN_CIRCULAR_LENGTH) continue;
+		if (!isClosedLine(*lines[i])) continue;
+		if (getEntropy(*lines[i]) < SEGMENT_MIN_ENTROPY) continue;
 
+		cornerIndexes = getCorners(*lines[i], &numOfCorner);
+		
+		sub_lines = getSubArcs(*lines[i], numOfCorner, cornerIndexes, &count);
+		numOfNearCircular += count;
 
-	// This is how you access the pixels of the edge segments returned by EDPF
-	memset(map->edgeImg, 0, width*height);
-	Line *line = NULL;
-	for (int i=0; i<map->noSegments; i++){
-		int start, end;
-		for (int j=0; j<map->segments[i].noPixels; j++){
-			int r = map->segments[i].pixels[j].r;
-			int c = map->segments[i].pixels[j].c;
-			map->edgeImg[r*width+c] = 255;
+		for (j=0; j<count; j++) {
+			drawEllipse(sub_lines[j], cvImg);
 		}
-
-		if (line != NULL) {
-			free(line->pixels);
-			free(line);
+		
+		for (int c=0; c<count; c++) {
+			free(sub_lines[c]->pixels);
+			free(sub_lines[c]);
 		}
+		free(sub_lines);
 
-		line = makeLine(map->segments[i]);
+		free (cornerIndexes);
 
-//		printf("%f\n", getEntropy(*line));
-//		if (getMaxEntropy(*line, &start, &end) < MIN_ENTROPY) continue;
-		if (getMaxEntropy(*line) < MIN_ENTROPY) continue;
-
-		color.r = (color.r * 13) % 186 + 70;
-		color.g = (color.r * 17) % 186 + 70;
-		color.b = (color.r * 41) % 186 + 70;
-		for (int j=start; j<end; j++){
-			int r = line->pixels[j].x;
-			int c = line->pixels[j].y;
-		      
-			img->setPixel(color,height-r-1,c);
-		} //end-for
 	} //end-for
+
+	if (!numOfNearCircular) {
+		printf("There is no Near-Circular\n");
+
+		for (i=0; i<map->noSegments; i++){
+			int j;
+			int numOfCorner;
+			int *cornerIndexes;
+			Line **sub_lines;
+			int count;
+
+			cornerIndexes = getCorners(*lines[i], &numOfCorner);
+			
+			sub_lines = getSubArcs(*lines[i], numOfCorner, cornerIndexes, &count);
+
+			for (j=0; j<count; j++) {
+				drawEllipse(sub_lines[j], cvImg);
+			}
+		
+			for (int c=0; c<count; c++) {
+				free(sub_lines[c]->pixels);
+				free(sub_lines[c]);
+			}
+			free(sub_lines);
+
+			free (cornerIndexes);
+		} //end-for
+	} // end-if
+
+	for (i=0; i<map->noSegments; i++) {
+		free(lines[i]->pixels);
+		free(lines[i]);
+	}
+	free(lines);
 
 	timer.Stop();
 
-	printf("EDCircle detects <%d> edge segments in <%4.2lf> ms.\n\n", map->noSegments, timer.ElapsedTime());
-	img->WriteImage("image.tga");
+	printf("EDEllipse detects <%d> edge segments in <%4.2lf> ms.\n\n", map->noSegments, timer.ElapsedTime());
+
+	cvShowImage("my", cvImg);
+	cvWaitKey(0);
+	cvReleaseImage(&cvImg);
 
 	delete map;
-	delete srcImg;
 
 	return 0;
+}
+
+void drawEllipse(Line *line, IplImage *img) {
+	CvPoint centroid = centerOfLargestBlob(img);
+
+	CvBox2D box = getEllipseFromLine(line);
+
+	CvPoint center;
+        CvSize size;
+        center = cvPointFrom32f(box.center);
+        size.width = cvRound(box.size.width*0.5);
+        size.height = cvRound(box.size.height*0.5);
+
+	if (!isTooFar(centroid, box)) {
+        	cvEllipse(img, center, size, -box.angle, 0, 360, CV_RGB(100,100,100), 1, CV_AA, 0);
+	}
 }

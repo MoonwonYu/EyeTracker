@@ -1,7 +1,7 @@
 #ifndef _EDLIB_H_
 #define _EDLIB_H_
 
-#include "EdgeMap.h"
+#include "../Headers/EdgeMap.h"
 
 /// Detect Edges by Edge Drawing (ED). Steps of the algorithm:
 /// (1) Smooth the image with a 5x5 Gaussian kernel with sigma=smoothingSigma

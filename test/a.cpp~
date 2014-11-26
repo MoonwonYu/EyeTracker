@@ -1,0 +1,35 @@
+
+//Input-Output 
+#include <stdio.h>
+
+#include "EDEllipse.h"/*
+#include "EdgeMap.h"
+#include "EDLib.h"
+#include "EDCorner.h"
+*/
+//NameSpaces
+using namespace std;
+
+int main(int argc, char *argv[])
+{
+	IplImage* src = cvLoadImage(argv[1], CV_LOAD_IMAGE_GRAYSCALE);
+	CvPoint centroid = centerOfLargestBlob(src);
+
+	cvCircle(src, centroid, 3, {200, 100, 100, 100}, 3);
+
+	cvShowImage("my", src);
+	cvWaitKey(0);
+
+	Line l;
+	CvBox2D box = getEllipseFromLine(l);
+
+	CvPoint center;
+        CvSize size;
+        center = cvPointFrom32f(box.center);
+        size.width = cvRound(box.size.width*0.5);
+        size.height = cvRound(box.size.height*0.5);
+
+        cvEllipse(src, center, size, -box.angle, 0, 360, CV_RGB(0,0,255), 1, CV_AA, 0);
+
+	cvReleaseImage(&src);
+}

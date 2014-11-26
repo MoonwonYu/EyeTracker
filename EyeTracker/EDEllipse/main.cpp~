@@ -48,30 +48,36 @@ int main(int argc, char *argv[])
 
 		return 0;
 	}
-
 //////////CAM
-	CvCapture *capture = cvCaptureFromCAM(CV_CAP_ANY);
+	CvCapture *capture = cvCaptureFromCAM(0);
+	if (!capture) {
+		printf("No camera\n");
+		return -1;
+	}
 	IplImage *frame;
 
 	while(1){
 		frame = cvQueryFrame(capture);
+		IplImage *cvImg = cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 1);
 		
 		if(!frame) {
-			printf("Cannot open CAM\n");
-			break;
+			printf("Cannot read cam\n");
+			cvReleaseCapture(&capture);
+			
+			return -1;
 		}
+		cvCvtColor(frame, cvImg, CV_RGB2GRAY);
+		findEllipsesFromImage(cvImg);
 
-		findEllipsesFromImage(frame);
+		cvShowImage("Cam", cvImg);
 
-		cvShowImage("Cam", frame);
-
+		cvReleaseImage(&cvImg);
 		if (cvWaitKey(10) == 27)
 			break;
 	}
 
 	cvReleaseCapture(&capture);
 	cvReleaseImage(&frame);
-	cvDestroyWindow("Cam");
 
 	return 0;
 }

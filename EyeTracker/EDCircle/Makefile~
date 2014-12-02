@@ -1,0 +1,2 @@
+all:
+	g++ -o EDCircle main.cpp EDLib.a `pkg-config opencv --libs --cflags` -L/usr/local/lib -lcvblob

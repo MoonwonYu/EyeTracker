@@ -28,11 +28,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Image.h"
+#include "../Headers/Image.h"
 
-#include "Timer.h"
-#include "EdgeMap.h"
-#include "EDLib.h"
+#include "../Headers/Timer.h"
+#include "../Headers/EdgeMap.h"
+#include "../Headers/EDLib.h"
 
 int main(){
   // Here is the test code

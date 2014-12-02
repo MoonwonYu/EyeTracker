@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Image.h"
-#include "EDSegment.h"
+#include "../Headers/Image.h"
+#include "../Headers/EDSegment.h"
 
-#include "Timer.h"
-#include "EdgeMap.h"
-#include "EDLib.h"
+#include "../Headers/Timer.h"
+#include "../Headers/EdgeMap.h"
+#include "../Headers/EDLib.h"
 
 #define DEFAULT_IMAGE (char *)"2.pgm"
 
@@ -77,8 +77,8 @@ int main(int argc, char *argv[]) {
 		color.g = (color.r * 17) % 186 + 70;
 		color.b = (color.r * 41) % 186 + 70;
 		for (int j=0; j<line->length; j++){
-			int r = line->pixels[j].x;
-			int c = line->pixels[j].y;
+			int r = line->pixels[j].r;
+			int c = line->pixels[j].c;
 		      
 			img->setPixel(color,height-r-1,c);
 		} //end-for

@@ -1,7 +1,7 @@
 #ifndef _EDSEGMENT_H_
 #define _EDSEGMENT_H_
 
-#include "EdgeMap.h"
+#include "../Headers/EdgeMap.h"
 #include <stdlib.h>
 #include <math.h>
 

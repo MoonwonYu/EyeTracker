@@ -3,7 +3,6 @@
 
 #include <stdlib.h>
 #include <math.h>
-
 #include "EDSegment.h"
 
 #define CORNER_SIGMA 2.0

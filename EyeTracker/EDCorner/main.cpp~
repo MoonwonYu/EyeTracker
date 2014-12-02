@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Image.h"
-#include "EDSegment.h"
-#include "EDCorner.h"
+#include "../Image.h"
+#include "../EDSegment.h"
+#include "../EDCorner.h"
 
-#include "Timer.h"
-#include "EdgeMap.h"
-#include "EDLib.h"
+#include "../Timer.h"
+#include "../EdgeMap.h"
+#include "../EDLib.h"
 
 #define DEFAULT_IMAGE (char *)"2.pgm"
 
@@ -140,7 +140,7 @@ void drawSubEdges(Line **sub_lines, int count, TGAImage *img, Colour *color) {
 			int r = height-sub_lines[i]->pixels[j].r-1;
 			int c = sub_lines[i]->pixels[j].c;
 
-			img->setPixel(*color, x, y);
+			img->setPixel(*color, r, c);
 		}
 	}
 }

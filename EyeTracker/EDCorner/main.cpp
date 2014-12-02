@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Image.h"
-#include "EDSegment.h"
-#include "EDCorner.h"
+#include "../Headers/Image.h"
+#include "../Headers/EDSegment.h"
+#include "../Headers/EDCorner.h"
 
-#include "Timer.h"
-#include "EdgeMap.h"
-#include "EDLib.h"
+#include "../Headers/Timer.h"
+#include "../Headers/EdgeMap.h"
+#include "../Headers/EDLib.h"
 
 #define DEFAULT_IMAGE (char *)"2.pgm"
 

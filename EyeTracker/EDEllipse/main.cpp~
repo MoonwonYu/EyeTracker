@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 			drawEllipse(pupil, cvImg);
 		}
 		else {
-			printf("There is no pupil!!\n");
+			printf("No pupil detected!!\n");
 		}
 
 		timer.Stop();
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 //////////CAM
-	CvCapture *capture = cvCaptureFromCAM(0);
+	CvCapture *capture = cvCaptureFromCAM(-1);
 	if (!capture) {
 		printf("No camera\n");
 		return -1;

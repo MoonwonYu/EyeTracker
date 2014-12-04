@@ -12,8 +12,8 @@
 #include "../Headers/EDSegment.h"
 #include "../Headers/EDCorner.h"
 
-#define ELLIPSE_BLOB_THRESHOLD 55
-#define ELLIPSE_MAX_DISTANCE 50
+#define ELLIPSE_BLOB_THRESHOLD 40
+#define ELLIPSE_MAX_DISTANCE 60
 #define ELLIPSE_MIN_DISTANCE 20
 #define ELLIPSE_MAX_NUM 10
 
@@ -118,6 +118,10 @@ CvPoint centerOfLargestBlob(IplImage* src) {
 	
 	cvSmooth(src, gray, CV_GAUSSIAN, 5, 5, 5, 5);
 	cvThreshold(gray, gray, ELLIPSE_BLOB_THRESHOLD, 255, CV_THRESH_BINARY_INV);
+
+//	cvSmooth(src, src, CV_GAUSSIAN, 5, 5, 5, 5);
+//	cvThreshold(src, src, ELLIPSE_BLOB_THRESHOLD, 255, CV_THRESH_BINARY_INV);
+
 	IplImage *labelImg=cvCreateImage(cvGetSize(gray), IPL_DEPTH_LABEL, 1);
 
 	CvBlobs blobs;

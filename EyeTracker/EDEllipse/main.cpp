@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 //////////CAM
-	CvCapture *capture = cvCaptureFromCAM(0);
+	CvCapture *capture = cvCaptureFromCAM(-1);
 	if (!capture) {
 		printf("No camera\n");
 		return -1;
@@ -65,7 +65,13 @@ int main(int argc, char *argv[])
 
 		CvBox2D pupil = findPuppil(cvImg);
 
-		drawEllipse(pupil, cvImg);
+		// exception
+		if (pupil.size.width > 0) {
+			drawEllipse(pupil, cvImg);
+		}
+		else {
+			printf("No pupil detected!!\n");
+		}
 
 		cvShowImage("Cam", cvImg);
 

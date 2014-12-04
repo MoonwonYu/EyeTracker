@@ -67,21 +67,19 @@ int main(int argc, char *argv[])
 
 		// exception
 		if (pupil.size.width > 0) {
-			drawEllipse(pupil, cvImg);
+			drawEllipse(pupil, frame);
 		}
 		else {
 			printf("No pupil detected!!\n");
 		}
 
-		cvShowImage("Cam", cvImg);
+		cvShowImage("Cam", frame);
 
 		cvReleaseImage(&cvImg);
-		if (cvWaitKey(10) == 27)
-			break;
 	}
 
-	cvReleaseCapture(&capture);
 	cvReleaseImage(&frame);
+	cvReleaseCapture(&capture);
 
 	return 0;
 }

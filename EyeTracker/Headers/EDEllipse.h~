@@ -15,7 +15,7 @@
 #define ELLIPSE_BLOB_THRESHOLD 40
 #define ELLIPSE_MAX_DISTANCE 60
 #define ELLIPSE_MIN_DISTANCE 20
-#define ELLIPSE_MAX_NUM 100
+#define ELLIPSE_MAX_NUM 50
 
 using namespace cvb;
 

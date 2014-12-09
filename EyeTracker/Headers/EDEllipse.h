@@ -200,7 +200,7 @@ int contains(CvPoint centroid, CvBox2D ellipse) {
 	dtop = centroid.y - (top.y + gradient * (centroid.x - top.x));
 	dbottom = centroid.y - (bottom.y + gradient * (centroid.x - bottom.x));
 
-	return (sqrt(dx*dx + dy*dy) < ELLIPSE_MIN_DISTANCE) || (sqrt(dx*dx +e dy*dy) < ELLIPSE_MAX_DISTANCE && dleft*dright < 0 && dtop*dbottom < 0);
+	return (sqrt(dx*dx + dy*dy) < ELLIPSE_MIN_DISTANCE) || (sqrt(dx*dx +dy*dy) < ELLIPSE_MAX_DISTANCE && dleft*dright < 0 && dtop*dbottom < 0);
 }
 
 int isTooFar(CvPoint centroid, CvBox2D ellipse) {

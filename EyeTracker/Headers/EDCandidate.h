@@ -23,7 +23,9 @@ CvBox2D findPuppil(IplImage* cvImg) {
 
 	findEllipsesFromImage(cvImg, &numOfEllipses, ellipses, ellipseLines);
 
-	//drawEllipses(cvImg, numOfEllipses, ellipses);
+	// detect faileure
+	pupil.size.width = -1;
+//	drawEllipses(cvImg, numOfEllipses, ellipses);
 
 	int i, j;
 

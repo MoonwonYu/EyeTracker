@@ -92,7 +92,7 @@ void findEllipsesFromImage(IplImage* cvImg, int *numOfEllipses, CvBox2D ellipses
 			sub_lines = getSubArcs(*lines[i], numOfCorner, cornerIndexes, &count);
 
 			for (j=0; j<count; j++) {
-				if (addEllipse(sub_lines[j], numOfEllipses, ellipses, ellipseLines, centroid) != 1) {
+				if (addEllipse(sub_lines[j], numOfEllipses, ellipses, ellipseLines, centroid)) {
 					free(sub_lines[j]->pixels);
 					free(sub_lines[j]);
 				}
@@ -200,7 +200,7 @@ int contains(CvPoint centroid, CvBox2D ellipse) {
 	dtop = centroid.y - (top.y + gradient * (centroid.x - top.x));
 	dbottom = centroid.y - (bottom.y + gradient * (centroid.x - bottom.x));
 
-	return (sqrt(dx*dx + dy*dy) < ELLIPSE_MIN_DISTANCE) || (sqrt(dx*dx +e dy*dy) < ELLIPSE_MAX_DISTANCE && dleft*dright < 0 && dtop*dbottom < 0);
+	return (sqrt(dx*dx + dy*dy) < ELLIPSE_MIN_DISTANCE) || (sqrt(dx*dx +dy*dy) < ELLIPSE_MAX_DISTANCE && dleft*dright < 0 && dtop*dbottom < 0);
 }
 
 int isTooFar(CvPoint centroid, CvBox2D ellipse) {
@@ -225,10 +225,10 @@ int addEllipse(Line *line, int *numOfEllipses, CvBox2D ellipses[ELLIPSE_MAX_NUM]
 //		printf("score : %f\n", scoreOfEllipse(line, box));
 		ellipses[(*numOfEllipses)] = box;
 		ellipseLines[(*numOfEllipses)++] = line;
-		return 1;
+		return 0;
 //	}
 
-//	return 0;
+//	return 1;
 }
 
 #endif

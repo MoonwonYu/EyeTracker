@@ -92,7 +92,7 @@ void findEllipsesFromImage(IplImage* cvImg, int *numOfEllipses, CvBox2D ellipses
 			sub_lines = getSubArcs(*lines[i], numOfCorner, cornerIndexes, &count);
 
 			for (j=0; j<count; j++) {
-				if (addEllipse(sub_lines[j], numOfEllipses, ellipses, ellipseLines, centroid) != 1) {
+				if (addEllipse(sub_lines[j], numOfEllipses, ellipses, ellipseLines, centroid) != 0) {
 					free(sub_lines[j]->pixels);
 					free(sub_lines[j]);
 				}
@@ -225,10 +225,10 @@ int addEllipse(Line *line, int *numOfEllipses, CvBox2D ellipses[ELLIPSE_MAX_NUM]
 //		printf("score : %f\n", scoreOfEllipse(line, box));
 		ellipses[(*numOfEllipses)] = box;
 		ellipseLines[(*numOfEllipses)++] = line;
-		return 1;
+		return 0;
 //	}
 
-//	return 0;
+//	return 1;
 }
 
 #endif

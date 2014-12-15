@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define CANDIDATE_MAX_COMBINATION 7
+#define CANDIDATE_MAX_COMBINATION 50
 
 CvBox2D findPuppil(IplImage* cvImg);
 double scoreOfEllipse(Line *line, CvBox2D ellipse);
@@ -29,6 +29,7 @@ CvBox2D findPuppil(IplImage* cvImg) {
 
 	int i, j;
 
+	// must be fixed
 	for (i=0; i<numOfEllipses; i++) {
 		for (j=i; (j-i+1 < CANDIDATE_MAX_COMBINATION) && (j<numOfEllipses); j++) {
 			int ln, len, cnt;

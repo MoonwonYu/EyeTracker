@@ -38,7 +38,7 @@ int main(){
   // Here is the test code
   int width, height;
   unsigned char *srcImg; 
-  char *str = (char *)"4.pgm";
+  char *str = (char *)"e2.pgm";
 
   if (ReadImagePGM(str, (char **)&srcImg, &width, &height) == 0){
     printf("Failed opening <%s>\n", str);

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define CANDIDATE_MAX_COMBINATION 50
+#define CANDIDATE_MAX_COMBINATION 7
 
 CvBox2D findPuppil(IplImage* cvImg);
 double scoreOfEllipse(Line *line, CvBox2D ellipse);
@@ -23,11 +23,12 @@ CvBox2D findPuppil(IplImage* cvImg) {
 
 	findEllipsesFromImage(cvImg, &numOfEllipses, ellipses, ellipseLines);
 
-	//drawEllipses(cvImg, numOfEllipses, ellipses);
+//	drawEllipses(cvImg, numOfEllipses, ellipses);
 
-	int i, j;
-
+	int i, n;
+/*
 	// must be fixed
+	int j;
 	for (i=0; i<numOfEllipses; i++) {
 		for (j=i; (j-i+1 < CANDIDATE_MAX_COMBINATION) && (j<numOfEllipses); j++) {
 			int ln, len, cnt;
@@ -55,6 +56,42 @@ CvBox2D findPuppil(IplImage* cvImg) {
 			free(line);
 		}
 
+		free(ellipseLines[i]->pixels);
+		free(ellipseLines[i]);
+	}
+/*/
+
+	int numOfCombinations = pow(2,numOfEllipses);
+	for (n=1; n<numOfCombinations; n++) {
+		int cnt = 0;
+		int li, ln, len;
+		Line *line = (Line *) malloc (sizeof(Line));
+		line->length = 0;
+
+		for (ln=0, li=n; li>0; ln++, li/=2) {
+			line->length += ellipseLines[ln]->length;
+		}
+
+		line->pixels = (GPixel *) malloc (sizeof(GPixel)*line->length);
+		for (ln=0, li=n; li>0; ln++, li/=2) {
+			for (len=0; len<ellipseLines[ln]->length; len++) {
+				line->pixels[cnt++] = ellipseLines[ln]->pixels[len];
+			}
+		}
+
+		CvBox2D ellipse = getEllipseFromLine(line);
+
+		double score = scoreOfEllipse(line, ellipse);
+		if (score < minScore) {
+			minScore = score;
+			pupil = ellipse;
+		}
+
+		free(line->pixels);
+		free(line);
+	}
+
+	for (i=0; i<numOfEllipses; i++) {
 		free(ellipseLines[i]->pixels);
 		free(ellipseLines[i]);
 	}

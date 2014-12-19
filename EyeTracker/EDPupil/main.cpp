@@ -53,15 +53,17 @@ int main(int argc, char *argv[])
 
 	while(1){
 		frame = cvQueryFrame(capture);
-		IplImage *cvImg = cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 1);
-		
+
 		if(!frame) {
 			printf("Cannot read cam\n");
 			cvReleaseCapture(&capture);
 			
 			return -1;
 		}
-		cvCvtColor(frame, cvImg, CV_RGB2GRAY);
+
+		IplImage *cvImg = cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 1);
+
+		cvCvtColor(cvImg, cvImg, CV_RGB2GRAY);
 
 		CvBox2D pupil = findPuppil(cvImg);
 
@@ -76,9 +78,11 @@ int main(int argc, char *argv[])
 		cvShowImage("Cam", frame);
 
 		cvReleaseImage(&cvImg);
+
+		//cvReleaseImage(&frame);
 	}
 
-	cvReleaseImage(&frame);
+//	cvReleaseImage(&frame);
 	cvReleaseCapture(&capture);
 
 	return 0;

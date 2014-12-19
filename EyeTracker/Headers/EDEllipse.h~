@@ -15,7 +15,7 @@
 #define ELLIPSE_BLOB_THRESHOLD 40
 #define ELLIPSE_MAX_DISTANCE 60
 #define ELLIPSE_MIN_DISTANCE 20
-#define ELLIPSE_MAX_NUM 50
+#define ELLIPSE_MAX_NUM 10
 
 using namespace cvb;
 
@@ -65,7 +65,7 @@ void findEllipsesFromImage(IplImage* cvImg, int *numOfEllipses, CvBox2D ellipses
 		numOfNearCircular += count;
 
 		for (j=0; j<count; j++) {
-			if (addEllipse(sub_lines[j], numOfEllipses, ellipses, ellipseLines, centroid) != 1) {
+			if (addEllipse(sub_lines[j], numOfEllipses, ellipses, ellipseLines, centroid) != 0) {
 				free(sub_lines[j]->pixels);
 				free(sub_lines[j]);
 			}
@@ -92,7 +92,7 @@ void findEllipsesFromImage(IplImage* cvImg, int *numOfEllipses, CvBox2D ellipses
 			sub_lines = getSubArcs(*lines[i], numOfCorner, cornerIndexes, &count);
 
 			for (j=0; j<count; j++) {
-				if (addEllipse(sub_lines[j], numOfEllipses, ellipses, ellipseLines, centroid)) {
+				if (addEllipse(sub_lines[j], numOfEllipses, ellipses, ellipseLines, centroid) != 0) {
 					free(sub_lines[j]->pixels);
 					free(sub_lines[j]);
 				}
@@ -216,7 +216,7 @@ int addEllipse(Line *line, int *numOfEllipses, CvBox2D ellipses[ELLIPSE_MAX_NUM]
         size.width = cvRound(box.size.width*0.5);
         size.height = cvRound(box.size.height*0.5);
 
-//	if (!isTooFar(centroid, box)) {
+	if (!isTooFar(centroid, box)) {
 		if (*numOfEllipses == ELLIPSE_MAX_NUM) {
 			printf("Too many ellipses\n");
 			return -1;
@@ -226,9 +226,9 @@ int addEllipse(Line *line, int *numOfEllipses, CvBox2D ellipses[ELLIPSE_MAX_NUM]
 		ellipses[(*numOfEllipses)] = box;
 		ellipseLines[(*numOfEllipses)++] = line;
 		return 0;
-//	}
+	}
 
-//	return 1;
+	return 1;
 }
 
 #endif

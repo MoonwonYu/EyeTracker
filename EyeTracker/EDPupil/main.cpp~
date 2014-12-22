@@ -36,6 +36,8 @@ int main(int argc, char *argv[])
 		timer.Stop();
 		printf("EDEllipse worked in <%4.2lf> ms.\n\n", timer.ElapsedTime());
 		
+		printf("Pupil size : %f\n", pupil.size.height);
+
 		while (1) {
 			cvShowImage("Photo", cvImg);
 			if (cvWaitKey(10) >= 0) break;
@@ -75,9 +77,10 @@ int main(int argc, char *argv[])
 			printf("No pupil detected!!\n");
 		}
 
+		printf("Pupil size : %f\n", pupil.size.height);
+
 		cvShowImage("Cam", frame);
 
-		cvReleaseImage(&frame);
 		cvReleaseImage(&cvImg);
 
 		//cvReleaseImage(&frame);

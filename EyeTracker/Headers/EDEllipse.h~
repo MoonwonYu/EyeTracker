@@ -12,7 +12,7 @@
 #include "../Headers/EDSegment.h"
 #include "../Headers/EDCorner.h"
 
-#define ELLIPSE_BLOB_THRESHOLD 40
+#define ELLIPSE_BLOB_THRESHOLD 60
 #define ELLIPSE_MAX_DISTANCE 60
 #define ELLIPSE_MIN_DISTANCE 20
 #define ELLIPSE_MAX_NUM 10
@@ -78,7 +78,7 @@ void findEllipsesFromImage(IplImage* cvImg, int *numOfEllipses, CvBox2D ellipses
 	} //end-for
 
 	if (!numOfNearCircular) {
-		printf("There is no Near-Circular\n");
+	//	printf("There is no Near-Circular\n");
 
 		for (i=0; i<map->noSegments; i++){
 			int j;
@@ -139,6 +139,8 @@ CvPoint centerOfLargestBlob(IplImage* src) {
 			maxArea = blob->area;
 		}
 	}
+
+	cvReleaseBlobs(blobs);
 
 	cvReleaseImage(&labelImg);
 	cvReleaseImage(&gray);
@@ -218,6 +220,7 @@ int addEllipse(Line *line, int *numOfEllipses, CvBox2D ellipses[ELLIPSE_MAX_NUM]
 
 	if (!isTooFar(centroid, box)) {
 		if (*numOfEllipses == ELLIPSE_MAX_NUM) {
+
 			printf("Too many ellipses\n");
 			return -1;
 		}
@@ -225,10 +228,17 @@ int addEllipse(Line *line, int *numOfEllipses, CvBox2D ellipses[ELLIPSE_MAX_NUM]
 //		printf("score : %f\n", scoreOfEllipse(line, box));
 		ellipses[(*numOfEllipses)] = box;
 		ellipseLines[(*numOfEllipses)++] = line;
+
 		return 0;
 	}
+<<<<<<< HEAD
 
 	return 1;
+=======
+
+	return 1;
+
+>>>>>>> fb69330e60a6e92393cd0ad23ff09e419d5a152a
 }
 
 #endif

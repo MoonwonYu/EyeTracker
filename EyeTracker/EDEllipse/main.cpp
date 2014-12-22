@@ -66,16 +66,18 @@ int main(int argc, char *argv[])
 		CvBox2D pupil = findPuppil(cvImg);
 
 		// exception
-		if (pupil.size.width > 0) {
-			drawEllipse(pupil, frame);
-		}
-		else {
+		if (pupil.size.width < 0) {
 			printf("No pupil detected!!\n");
 		}
+		else {
+			drawEllipse(pupil, cvImg);
+		}
 
-		cvShowImage("Cam", frame);
+		cvShowImage("Cam", cvImg);
 
 		cvReleaseImage(&cvImg);
+		
+		if (cvWaitKey(10) == 27) break;
 	}
 
 	cvReleaseImage(&frame);

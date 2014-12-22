@@ -23,43 +23,12 @@ CvBox2D findPuppil(IplImage* cvImg) {
 
 	findEllipsesFromImage(cvImg, &numOfEllipses, ellipses, ellipseLines);
 
+	// detect faileure
+	pupil.size.width = -1;
+
 //	drawEllipses(cvImg, numOfEllipses, ellipses);
 
 	int i, n;
-/*
-	// must be fixed
-	int j;
-	for (i=0; i<numOfEllipses; i++) {
-		for (j=i; (j-i+1 < CANDIDATE_MAX_COMBINATION) && (j<numOfEllipses); j++) {
-			int ln, len, cnt;
-			Line *line = (Line *) malloc (sizeof(Line));
-			line->length = 0;
-			for (ln=i; ln<=j; ln++) {
-				line->length += ellipseLines[ln]->length;
-			}
-
-			line->pixels = (GPixel *) malloc (sizeof(GPixel)*line->length);
-			for (ln=i, cnt=0; ln<=j; ln++) {
-				for (len=0; len<ellipseLines[ln]->length; len++) {
-					line->pixels[cnt++] = ellipseLines[ln]->pixels[len];
-				}
-			}
-
-			CvBox2D ellipse = getEllipseFromLine(line);
-			double score = scoreOfEllipse(line, ellipse);
-			if (score < minScore) {
-				minScore = score;
-				pupil = ellipse;
-			}
-
-			free(line->pixels);
-			free(line);
-		}
-
-		free(ellipseLines[i]->pixels);
-		free(ellipseLines[i]);
-	}
-/*/
 
 	int numOfCombinations = pow(2,numOfEllipses);
 	for (n=1; n<numOfCombinations; n++) {

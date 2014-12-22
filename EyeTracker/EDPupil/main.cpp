@@ -81,10 +81,11 @@ int main(int argc, char *argv[])
 
 		cvShowImage("Cam", frame);
 
+		if (cvWaitKey(10) >= 0) break;
+
 		cvReleaseImage(&cvImg);
 
 		//cvReleaseImage(&frame);
-		if (cvWaitKey(10) >= 0) break;
 	}
 
 //	cvReleaseImage(&frame);

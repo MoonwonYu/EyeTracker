@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 
 		IplImage *cvImg = cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 1);
 
-		cvCvtColor(cvImg, cvImg, CV_RGB2GRAY);
+		cvCvtColor(frame, cvImg, CV_RGB2GRAY);
 
 		CvBox2D pupil = findPuppil(cvImg);
 
@@ -84,11 +84,9 @@ int main(int argc, char *argv[])
 		if (cvWaitKey(10) >= 0) break;
 
 		cvReleaseImage(&cvImg);
-
-		//cvReleaseImage(&frame);
 	}
 
-//	cvReleaseImage(&frame);
+	cvReleaseImage(&frame);
 	cvReleaseCapture(&capture);
 
 	return 0;

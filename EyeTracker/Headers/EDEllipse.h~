@@ -231,14 +231,8 @@ int addEllipse(Line *line, int *numOfEllipses, CvBox2D ellipses[ELLIPSE_MAX_NUM]
 
 		return 0;
 	}
-<<<<<<< HEAD
 
 	return 1;
-=======
-
-	return 1;
-
->>>>>>> fb69330e60a6e92393cd0ad23ff09e419d5a152a
 }
 
 #endif

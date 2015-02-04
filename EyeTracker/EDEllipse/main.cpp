@@ -3,8 +3,9 @@
 #include <stdio.h>
 
 #include "../Headers/ImageProcess.h"
-#include "../Headers/EDCandidate.h"
+#include "../Headers/Candidate.h"
 #include "../Headers/Timer.h"
+#include "../Headers/Image.h"
 
 //NameSpaces
 using namespace std;
@@ -35,7 +36,8 @@ int main(int argc, char *argv[])
 
 		timer.Stop();
 		printf("EDEllipse worked in <%4.2lf> ms.\n\n", timer.ElapsedTime());
-		
+
+		cvSaveImage("image.jpg", cvImg);
 		while (1) {
 			cvShowImage("Photo", cvImg);
 			if (cvWaitKey(10) >= 0) break;

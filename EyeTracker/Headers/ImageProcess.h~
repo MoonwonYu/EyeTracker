@@ -5,7 +5,7 @@
 #include <highgui.h>
 #include <math.h>
 
-#include "../Headers/EDEllipse.h"
+#include "../Headers/Ellipse.h"
 
 void drawEllipses(IplImage *img, int numOfEllipses, CvBox2D ellipses[ELLIPSE_MAX_NUM]);
 void drawEllipse(CvBox2D box, IplImage *img);
@@ -14,6 +14,7 @@ void drawEllipses(IplImage *img, int numOfEllipses, CvBox2D ellipses[ELLIPSE_MAX
 	int i;
 
 	for (i=0; i<numOfEllipses; i++) {
+		printf("a\n");
 		drawEllipse(ellipses[i], img);
 	}
 }
@@ -25,7 +26,7 @@ void drawEllipse(CvBox2D box, IplImage *img) {
         size.width = cvRound(box.size.width*0.5);
         size.height = cvRound(box.size.height*0.5);
 
-	cvCircle(img, centroid, 1, CV_RGB(255,255,255));
+	cvCircle(img, center, 1, CV_RGB(255,255,255));
 
         cvEllipse(img, center, size, box.angle, 0, 360, CV_RGB(255,255,255), 1, CV_AA, 0);
 }

@@ -1,15 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../Image.h"
-#include "../EDSegment.h"
-#include "../EDCorner.h"
+#include "../Headers/Image.h"
+#include "../Headers/EDSegment.h"
+#include "../Headers/EDCorner.h"
 
-#include "../Timer.h"
-#include "../EdgeMap.h"
-#include "../EDLib.h"
+#include "../Headers/Timer.h"
+#include "../Headers/EdgeMap.h"
+#include "../Headers/EDLib.h"
 
-#define DEFAULT_IMAGE (char *)"2.pgm"
+#include <cv.h>
+#include <highgui.h>
+
+using namespace cv;
 
 int width, height;
 
@@ -17,27 +20,28 @@ void drawSubEdges(Line **sub_lines, int count, TGAImage *img, Colour *color);
 
 int main(int argc, char *argv[]) {
 	int i;
-	
-	unsigned char *srcImg; 
-	char *str;
+	unsigned char *srcImg;
 	EdgeMap *map;
 	Timer timer;
 	int numOfNearCircular = 0;
 
-	if (argc == 1) {
-		char *temp = DEFAULT_IMAGE;
-		str = temp;
-	}
-	else {
-		str = argv[1];
-	}
+	IplImage *cvImg;
+
+	if (argc != 2) return 1;
+
+	char *	str = (char *)argv[1];
+
+	if (ReadImagePGM(str, (char **)&srcImg, &width, &height) == 0){
+		printf("Failed opening <%s>\n", str);
+		return 1;
+	} //end-if
 
 	timer.Start();
 
-	if (ReadImagePGM(str, (char **)&srcImg, &width, &height) == 0){
-	 	printf("Failed opening <%s>\n", str);
-		return 1;
-	} //end-if
+	if ((cvImg = cvLoadImage(argv[1], CV_LOAD_IMAGE_COLOR)) == 0) {
+			printf("Failed opening <%s>\n", argv[1]);
+			return 1;
+	}
 
 	printf("Working on %dx%d image\n", width, height);
 	
@@ -69,6 +73,9 @@ int main(int argc, char *argv[]) {
 
 		cornerIndexes = getCorners(*lines[i], &numOfCorner);
 		
+		for (int c=0; c<numOfCorner; c++)
+			cvCircle(cvImg, Point(lines[i]->pixels[cornerIndexes[c]].c, lines[i]->pixels[cornerIndexes[c]].r), 2, CV_RGB(200,200,0));
+
 		sub_lines = getSubArcs(*lines[i], numOfCorner, cornerIndexes, &count);
 		numOfNearCircular += count;
 
@@ -84,6 +91,7 @@ int main(int argc, char *argv[]) {
 
 	} //end-for
 
+//	if (1) {
 	if (!numOfNearCircular) {
 		printf("There is no Near-Circular\n");
 
@@ -95,6 +103,9 @@ int main(int argc, char *argv[]) {
 
 			cornerIndexes = getCorners(*lines[i], &numOfCorner);
 			
+			for (int c=0; c<numOfCorner; c++)
+				cvCircle(cvImg, Point(lines[i]->pixels[cornerIndexes[c]].c, lines[i]->pixels[cornerIndexes[c]].r), 2, CV_RGB(0,200,200));
+
 			sub_lines = getSubArcs(*lines[i], numOfCorner, cornerIndexes, &count);
 
 			drawSubEdges(sub_lines, count, img, &color);
@@ -119,6 +130,8 @@ int main(int argc, char *argv[]) {
 
 	printf("EDCorner detects <%d> edge segments in <%4.2lf> ms.\n\n", map->noSegments, timer.ElapsedTime());
 	img->WriteImage("image.tga");
+
+	cvSaveImage("image.jpg", cvImg);
 
 	delete map;
 	delete srcImg;

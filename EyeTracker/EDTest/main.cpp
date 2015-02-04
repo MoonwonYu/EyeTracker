@@ -34,11 +34,14 @@
 #include "../Headers/EdgeMap.h"
 #include "../Headers/EDLib.h"
 
-int main(){
+int main(int argc, char *argv[]){
   // Here is the test code
   int width, height;
   unsigned char *srcImg; 
-  char *str = (char *)"e2.pgm";
+
+  if (argc != 2) return 1;
+
+  char *str = (char *)argv[1];
 
   if (ReadImagePGM(str, (char **)&srcImg, &width, &height) == 0){
     printf("Failed opening <%s>\n", str);
@@ -80,7 +83,7 @@ int main(){
   TGAImage *img = new TGAImage((short)width, (short)height);
   Colour color = {0,0,0,255};
 
-  for(int x=0; x<width; x++)
+  for(int x=0; x<height; x++)
     for(int y=0; y<width; y++)
       img->setPixel(color,x,y);
 

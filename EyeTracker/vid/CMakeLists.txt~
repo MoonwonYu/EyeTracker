@@ -1,0 +1,8 @@
+cmake_minimum_required (VERSION 2.8)
+find_package(OpenCV)
+IF (OpenCV_FOUND)
+add_executable (simpletest_raspicam_cv simpletest_raspicam_cv.cpp)
+target_link_libraries (simpletest_raspicam_cv ${raspicam_CV_LIBS})
+ELSE()
+MESSAGE(FATAL_ERROR "OPENCV NOT FOUND IN YOUR SYSTEM")
+ENDIF()

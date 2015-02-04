@@ -5,7 +5,7 @@
 #include <highgui.h>
 #include <math.h>
 
-#include "../Headers/EDEllipse.h"
+#include "../Headers/Ellipse.h"
 
 void drawEllipses(IplImage *img, int numOfEllipses, CvBox2D ellipses[ELLIPSE_MAX_NUM]);
 void drawEllipse(CvBox2D box, IplImage *img);

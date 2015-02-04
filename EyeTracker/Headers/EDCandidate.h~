@@ -12,10 +12,11 @@ CvBox2D findPuppil(IplImage* cvImg);
 double scoreOfEllipse(Line *line, CvBox2D ellipse);
 double getEpsilon(Line *line, CvBox2D ellipse);
 double getTau(CvBox2D ellipse);
-int getPhi(Line *line);
+double getPhi(Line *line, CvBox2D ellipse);
+double getCircumference(CvBox2D ellipse);
 
 CvBox2D findPuppil(IplImage* cvImg) {
-	double minScore = 1.0;
+	double minScore = -1;
 	CvBox2D pupil;
 	int numOfEllipses = 0;
 	CvBox2D ellipses[ELLIPSE_MAX_NUM];
@@ -26,6 +27,7 @@ CvBox2D findPuppil(IplImage* cvImg) {
 	// detect faileure
 	pupil.size.width = -1;
 
+//	printf("num of ellipse : %d\n", numOfEllipses);
 //	drawEllipses(cvImg, numOfEllipses, ellipses);
 
 	int i, n;
@@ -51,7 +53,7 @@ CvBox2D findPuppil(IplImage* cvImg) {
 		CvBox2D ellipse = getEllipseFromLine(line);
 
 		double score = scoreOfEllipse(line, ellipse);
-		if (score < minScore) {
+		if (minScore < 0 || score < minScore) {
 			minScore = score;
 			pupil = ellipse;
 		}
@@ -69,8 +71,10 @@ CvBox2D findPuppil(IplImage* cvImg) {
 }
 
 double scoreOfEllipse(Line *line, CvBox2D ellipse) {
-//	printf("%f, %f, %d\n", getEpsilon(line, ellipse), getTau(ellipse), getPhi(line));
-	return pow(getEpsilon(line, ellipse), 2) * exp(abs(1-getTau(ellipse))) / pow(getPhi(line), 2);
+//	printf("%f, %f, %d\n", getEpsilon(line, ellipse), getTau(ellipse), getPhi(line, ellipse));
+	double score = pow(getEpsilon(line, ellipse), 2) * exp(abs(1-getTau(ellipse))) / pow(getPhi(line, ellipse), 2);
+//	printf("score : %f\n", score);
+	return score;
 }
 
 double getEpsilon(Line *line, CvBox2D ellipse) {
@@ -103,8 +107,12 @@ double getTau(CvBox2D ellipse) {
 	return abs(ellipse.size.width - ellipse.size.height) / (ellipse.size.width + ellipse.size.height);
 }
 
-int getPhi(Line *line) {
-	return line->length;
+double getPhi(Line *line, CvBox2D ellipse) {
+	return line->length / getCircumference(ellipse);
+}
+
+double getCircumference(CvBox2D ellipse) {
+	return M_PI * (5 * (ellipse.size.width+ellipse.size.height)/4 - (ellipse.size.width*ellipse.size.height)/(ellipse.size.width+ellipse.size.height));
 }
 
 #endif

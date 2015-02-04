@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "../Headers/ImageProcess.h"
-#include "../Headers/EDCandidate.h"
+#include "../Headers/Candidate.h"
 #include "../Headers/Timer.h"
 
 //NameSpaces
@@ -37,6 +37,8 @@ int main(int argc, char *argv[])
 		printf("EDEllipse worked in <%4.2lf> ms.\n\n", timer.ElapsedTime());
 		
 		printf("Pupil size : %f\n", pupil.size.height);
+
+		cvSaveImage("image.jpg", cvImg);
 
 		while (1) {
 			cvShowImage("Photo", cvImg);

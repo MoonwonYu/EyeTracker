@@ -34,11 +34,14 @@
 #include "../Headers/EdgeMap.h"
 #include "../Headers/EDLib.h"
 
-int main(){
+int main(int argc, char *argv[]){
   // Here is the test code
   int width, height;
   unsigned char *srcImg; 
-  char *str = (char *)"4.pgm";
+
+  if (argc != 2) return 1;
+
+  char *str = (char *)argv[1];
 
   if (ReadImagePGM(str, (char **)&srcImg, &width, &height) == 0){
     printf("Failed opening <%s>\n", str);

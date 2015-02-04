@@ -7,8 +7,9 @@
 #include <math.h>
 #include <cvblob.h>
 
+#include "../Headers/ImageProcess.h"
 #include "../Headers/EdgeMap.h"
-#include "../Headers/EDLib.h"
+//#include "../Headers/EDLib.h"
 #include "../Headers/EDSegment.h"
 #include "../Headers/EDCorner.h"
 
@@ -97,7 +98,6 @@ void findEllipsesFromImage(IplImage* cvImg, int *numOfEllipses, CvBox2D ellipses
 					free(sub_lines[j]);
 				}
 			}
-
 			free(sub_lines);
 
 			free (cornerIndexes);
@@ -159,7 +159,7 @@ CvBox2D getEllipseFromLine(Line *line) {
 		cvSeqPush(seq, &p);
 	}
 
-        CvBox2D box = cvFitEllipse2(seq); 
+        CvBox2D box = cvFitEllipse2(seq);
 	
         cvClearSeq(seq);
         cvReleaseMemStorage(&storage);
@@ -202,7 +202,7 @@ int contains(CvPoint centroid, CvBox2D ellipse) {
 	dtop = centroid.y - (top.y + gradient * (centroid.x - top.x));
 	dbottom = centroid.y - (bottom.y + gradient * (centroid.x - bottom.x));
 
-	return (sqrt(dx*dx + dy*dy) < ELLIPSE_MIN_DISTANCE) || (sqrt(dx*dx +dy*dy) < ELLIPSE_MAX_DISTANCE && dleft*dright < 0 && dtop*dbottom < 0);
+	return (sqrt(dx*dx + dy*dy) < ELLIPSE_MIN_DISTANCE) ;//|| (sqrt(dx*dx +dy*dy) < ELLIPSE_MAX_DISTANCE && dleft*dright < 0 && dtop*dbottom < 0);
 }
 
 int isTooFar(CvPoint centroid, CvBox2D ellipse) {
